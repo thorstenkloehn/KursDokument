@@ -1,0 +1,29 @@
+{
+  "LMS Lektion": {
+    "prefix": "lms-lesson",
+    "body": [
+      "---",
+      "title: \"${1:Titel der Lektion}\"",
+      "kategorie: \"${2:Kursname}\"",
+      "level: ${3|1,2,3|}",
+      "---",
+      "${4:Lerninhalte...}",
+      "---",
+      "Codebeispiele",
+      "---",
+      "```${5:csharp}",
+      "${6:// Beispiel}",
+      "<Placeholder>${7:erwarteter_wert}</Placeholder>",
+      "```",
+      "---"
+    ],
+    "description": "Erstellt eine neue LMS-Lektion mit Frontmatter."
+  },
+  "LMS Platzhalter": {
+    "prefix": "lms-ph",
+    "body": [
+      "<Placeholder>${1:text}</Placeholder>"
+    ],
+    "description": "Fügt einen LMS-Platzhalter ein."
+  }
+}

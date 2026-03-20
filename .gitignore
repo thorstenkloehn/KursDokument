@@ -1,0 +1,16 @@
+## Ignore Visual Studio / .NET files
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.doccache
+
+## Ignore OS files
+.DS_Store
+Thumbs.db
+
+## Ignore App Settings secrets (if you add them later)
+# appsettings.json
+# appsettings.Development.json

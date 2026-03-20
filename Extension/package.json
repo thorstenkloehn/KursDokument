@@ -1,0 +1,84 @@
+{
+  "name": "lms-helper",
+  "displayName": "LMS Kurs-Editor Helfer",
+  "description": "Unterstützung beim Erstellen von LMS-Lektionen mit Platzhaltern.",
+  "version": "0.2.0",
+  "publisher": "thorsten",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onView:lms-lessons"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "lms-explorer",
+          "title": "LMS Kurs-Manager",
+          "icon": "$(book)"
+        }
+      ]
+    },
+    "views": {
+      "lms-explorer": [
+        {
+          "id": "lms-lessons",
+          "name": "Verfügbare Lektionen"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "lms-helper.insertPlaceholder",
+        "title": "LMS: Platzhalter einfügen"
+      },
+      {
+        "command": "lms-lessons.openFile",
+        "title": "Lektion öffnen"
+      },
+      {
+        "command": "lms-lessons.refresh",
+        "title": "Aktualisieren",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "lms-lessons.refresh",
+          "when": "view == lms-lessons",
+          "group": "navigation"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "markdown",
+        "path": "./snippets/lms-snippets.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.90.0",
+    "@types/node": "20.x",
+    "typescript": "^5.4.5",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/parser": "^7.7.1",
+    "@typescript-eslint/eslint-plugin": "^7.7.1"
+  }
+}
