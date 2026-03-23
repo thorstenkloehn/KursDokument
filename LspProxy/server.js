@@ -26,6 +26,7 @@ wss.on('connection', (socket, request) => {
 
     // Mapping von Sprache zu Sprachserver-Befehl
     const serverMap = {
+        'java': { command: 'jdtls', args: [] },
         'cpp': { command: 'clangd', args: ['--background-index', '--log=verbose'] },
         'c': { command: 'clangd', args: ['--background-index'] },
         'go': { command: 'gopls', args: [] },
