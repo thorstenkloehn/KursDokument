@@ -63,11 +63,14 @@
         {
             <div class="col-md-5">
                 <div class="sticky-top" style="top: 20px;">
+                    <!-- ... Editor Card ... -->
                     <div class="card shadow-sm">
+                        <!-- Card Header etc. (stays the same) -->
                         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                             <span class="fw-bold">Übung: Code vervollständigen</span>
                             <div>
                                 <button id="solutionBtn" class="btn btn-sm btn-outline-info me-2">Lösung anzeigen</button>
+                                <button id="resetCodeBtn" class="btn btn-sm btn-outline-warning me-2">Code zurücksetzen</button>
                                 <button id="verifyBtn" class="btn btn-sm btn-success">Überprüfen</button>
                             </div>
                         </div>
@@ -77,11 +80,20 @@
                         <div class="card-footer bg-light p-3">
                             <div id="result-message" class="alert d-none mt-2" role="alert"></div>
                             
-                            <!-- Erfolgs-Konsole nach Abschluss -->
+                            <!-- Erfolgs-Konsole nach Abschluss (Anki Style) -->
                             <div id="success-panel" class="d-none text-center py-3 border rounded bg-white shadow-sm mt-3 animate__animated animate__fadeIn">
                                 <h4 class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Lektion Abgeschlossen!</h4>
-                                <p class="text-muted mb-3">Du hast diese Übung erfolgreich lokal verifiziert.</p>
+                                <p class="text-muted mb-3">Wann möchtest du diese Aufgabe wiederholen?</p>
                                 
+                                <div class="d-grid gap-2 col-10 mx-auto mb-4">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="setAnkiReview(0)">Nochmal<br/><small>&lt; 1 Min</small></button>
+                                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="setAnkiReview(1)">Schwer<br/><small>1 Tag</small></button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setAnkiReview(4)">Gut<br/><small>4 Tage</small></button>
+                                        <button type="button" class="btn btn-outline-success btn-sm" onclick="setAnkiReview(7)">Einfach<br/><small>7 Tage</small></button>
+                                    </div>
+                                </div>
+
                                 <div class="d-grid gap-2 col-10 mx-auto">
                                     @if (ViewBag.NextLessonId != null)
                                     {
@@ -89,13 +101,36 @@
                                             Nächste Übung <i class="bi bi-arrow-right"></i>
                                         </a>
                                     }
-                                    <a asp-action="Index" class="btn btn-outline-primary">
-                                        <i class="bi bi-list-ul"></i> Alle Übungen ansehen
-                                    </a>
-                                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
-                                        <i class="bi bi-house"></i> Zur Startseite
+                                    <a asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="bi bi-list-ul"></i> Zur Übersicht
                                     </a>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gemini Chat Widget -->
+                    <div class="card shadow-sm mt-3 border-primary">
+                        <div class="card-header bg-primary text-white d-flex align-items-center">
+                            <i class="bi bi-stars me-2"></i>
+                            <span class="fw-bold">Gemini CLI Tutor</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="chat-messages" style="height: 200px; overflow-y: auto; padding: 10px; background-color: #f8f9fa;">
+                                <div class="chat-message-ai mb-2">
+                                    <small class="text-muted">Gemini CLI Tutor:</small>
+                                    <div class="bg-white p-2 border rounded shadow-sm">
+                                        Hallo! Ich bin dein KI-Assistent. Wie kann ich dir bei dieser Aufgabe helfen?
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-2">
+                            <div class="input-group">
+                                <input type="text" id="chat-input" class="form-control" placeholder="Stelle eine Frage..." />
+                                <button class="btn btn-primary" type="button" id="send-chat">
+                                    <i class="bi bi-send"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -113,9 +148,7 @@
         
         <!-- Vorbereitung für LSP (Language Server Protocol) via WebSockets -->
         <script type="module">
-            // Hinweis: Für eine vollständige LSP-Integration wird normalerweise ein Bundler (Vite/Webpack) empfohlen.
-            // Dies ist die Konfiguration für die zukünftige Anbindung an einen Sprachserver-Proxy.
-            
+            // ... (rest of the script is updated below) ...
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
 
             let editor;
@@ -169,6 +202,14 @@
                     wordBasedSuggestions: "off" // Wir wollen echte LSP Vorschläge, keine Textbasierten
                 });
 
+                // Check if already completed
+                const cookieName = "lms_done_" + "@Model.Id";
+                if (document.cookie.split(';').some((item) => item.trim().startsWith(cookieName + '='))) {
+                    document.getElementById('success-panel').classList.remove('d-none');
+                    document.getElementById('verifyBtn').disabled = true;
+                    document.getElementById('solutionBtn').classList.add('d-none');
+                }
+
                 // Start der LSP-Verbindung
                 connectToLanguageServer(languageId);
             });
@@ -178,6 +219,37 @@
                     editor.setValue(solutionCode);
                 }
             });
+
+            document.getElementById('resetCodeBtn').addEventListener('click', function() {
+                if (confirm("Möchtest du diese Übung wirklich zurücksetzen? Dein Fortschritt für diese Lektion geht verloren.")) {
+                    const cookieName = "lms_done_" + "@Model.Id";
+                    document.cookie = cookieName + "=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+                    editor.setValue(initialCode);
+                    
+                    document.getElementById('success-panel').classList.add('d-none');
+                    document.getElementById('verifyBtn').disabled = false;
+                    document.getElementById('solutionBtn').classList.remove('d-none');
+                    document.getElementById('result-message').classList.add('d-none');
+                }
+            });
+
+            function setAnkiReview(days) {
+                const now = new Date();
+                const nextDate = new Date();
+                nextDate.setDate(now.getDate() + days);
+                if (days === 0) nextDate.setMinutes(now.getMinutes() + 1); // "Again" = 1 minute
+                
+                const reviewCookie = "lms_review_" + "@Model.Id";
+                document.cookie = reviewCookie + "=" + nextDate.getTime() + "; path=/; max-age=" + (365 * 24 * 60 * 60);
+                
+                const doneCookie = "lms_done_" + "@Model.Id";
+                document.cookie = doneCookie + "=true; path=/; max-age=" + (365 * 24 * 60 * 60);
+
+                const btns = document.querySelectorAll('.btn-group button');
+                btns.forEach(b => b.classList.add('disabled'));
+                
+                alert(`Geplant für die nächste Wiederholung: ${nextDate.toLocaleString()}`);
+            }
 
             document.getElementById('verifyBtn').addEventListener('click', async function() {
                 const currentCode = editor.getValue();
@@ -224,6 +296,60 @@
                     resultDiv.textContent = "Fehler bei der lokalen Prüfung.";
                     resultDiv.classList.remove('d-none');
                 }
+            });
+
+            // Chat Functionality
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const chatSendBtn = document.getElementById('send-chat');
+
+            function addMessage(text, isUser = false) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `chat-message-${isUser ? 'user' : 'ai'} mb-2`;
+                
+                const label = document.createElement('small');
+                label.className = 'text-muted';
+                label.textContent = isUser ? 'Du:' : 'Gemini CLI Tutor:';
+                
+                const content = document.createElement('div');
+                content.className = `${isUser ? 'bg-primary text-white' : 'bg-white'} p-2 border rounded shadow-sm`;
+                content.textContent = text;
+                
+                msgDiv.appendChild(label);
+                msgDiv.appendChild(content);
+                chatMessages.appendChild(msgDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            async function sendMessage() {
+                const msg = chatInput.value.trim();
+                if (!msg) return;
+
+                addMessage(msg, true);
+                chatInput.value = '';
+
+                try {
+                    const response = await fetch('/api/chat/ask', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: msg,
+                            lessonTitle: @Json.Serialize(Model.Title),
+                            lessonContent: @Json.Serialize(Model.Content),
+                            currentCode: editor.getValue()
+                        })
+                    });
+
+                    const data = await response.json();
+                    addMessage(data.response);
+                } catch (error) {
+                    addMessage("Fehler beim Abrufen der Antwort. Bitte versuche es später erneut.");
+                }
+            }
+
+            chatSendBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
             });
         </script>
     }

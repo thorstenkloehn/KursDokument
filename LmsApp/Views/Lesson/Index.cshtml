@@ -38,28 +38,48 @@
                         @foreach (var lesson in courseGroup)
                         {
                             var isCompleted = Context.Request.Cookies.ContainsKey("lms_done_" + lesson.Id);
+                            var reviewStr = Context.Request.Cookies["lms_review_" + lesson.Id];
+                            long reviewTime = 0;
+                            long.TryParse(reviewStr, out reviewTime);
+                            var isDue = isCompleted && reviewTime > 0 && DateTimeOffset.FromUnixTimeMilliseconds(reviewTime).DateTime < DateTime.Now;
+
                             <div class="col-md-4 mb-4">
-                                <div class="card h-100 shadow-sm border-@(isCompleted ? "success" : GetLevelColor(lesson.Level)) @(isCompleted ? "bg-light bg-opacity-50" : "")">
+                                <div class="card h-100 shadow-sm border-@(isDue ? "warning shadow" : (isCompleted ? "success" : GetLevelColor(lesson.Level))) @(isCompleted ? "bg-light bg-opacity-50" : "")">
                                     <div class="card-body d-flex flex-column">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h5 class="card-title mb-0 @(isCompleted ? "text-success" : "")">
-                                                @if (isCompleted) { <i class="bi bi-check-circle-fill me-1"></i> }
+                                            <h5 class="card-title mb-0 @(isDue ? "text-warning fw-bold" : (isCompleted ? "text-success" : ""))">
+                                                @if (isDue) { <i class="bi bi-alarm-fill me-1"></i> }
+                                                else if (isCompleted) { <i class="bi bi-check-circle-fill me-1"></i> }
                                                 @lesson.Title
                                             </h5>
                                             <span class="badge rounded-pill bg-@GetLevelColor(lesson.Level) small">
                                                 @GetLevelName(lesson.Level)
                                             </span>
                                         </div>
-                                        <p class="card-text text-muted small mb-3">@lesson.Category</p>
+                                        <p class="card-text text-muted small mb-1">@lesson.Category</p>
+                                        
+                                        @if (isCompleted && reviewTime > 0)
+                                        {
+                                            <p class="small text-muted mb-3">
+                                                <i class="bi bi-calendar3"></i> Nächste: @DateTimeOffset.FromUnixTimeMilliseconds(reviewTime).DateTime.ToShortDateString()
+                                                @if (isDue) { <span class="badge bg-warning text-dark ms-1">Fällig!</span> }
+                                            </p>
+                                        }
+
                                         <div class="mt-auto">
-                                            <a asp-action="Details" asp-route-id="@lesson.Id" class="btn @(isCompleted ? "btn-success" : "btn-outline-primary") w-100">
-                                                @(isCompleted ? "Wiederholen" : "Lektion starten")
+                                            <a asp-action="Details" asp-route-id="@lesson.Id" class="btn @(isDue ? "btn-warning" : (isCompleted ? "btn-success" : "btn-outline-primary")) w-100 shadow-sm">
+                                                @(isDue ? "Jetzt Wiederholen" : (isCompleted ? "Wiederholen" : "Lektion starten"))
                                             </a>
                                         </div>
                                     </div>
-                                    @if (isCompleted) {
+                                    @if (isCompleted && !isDue) {
                                         <div class="card-footer py-1 px-2 text-center bg-success text-white small" style="font-size: 0.75rem;">
                                             Abgeschlossen
+                                        </div>
+                                    }
+                                    @if (isDue) {
+                                        <div class="card-footer py-1 px-2 text-center bg-warning text-dark small fw-bold" style="font-size: 0.75rem;">
+                                            Wiederholung erforderlich
                                         </div>
                                     }
                                 </div>
@@ -80,7 +100,7 @@
                 const cookies = document.cookie.split(";");
                 for (let i = 0; i < cookies.length; i++) {
                     const cookie = cookies[i].trim();
-                    if (cookie.startsWith("lms_done_")) {
+                    if (cookie.startsWith("lms_done_") || cookie.startsWith("lms_review_")) {
                         const eqPos = cookie.indexOf("=");
                         const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
                         document.cookie = name + "=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";

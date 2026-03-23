@@ -65,6 +65,8 @@ node server.js
 
 - **Markdown-Parsing**: Der `LessonService` in der `LmsApp` parst Lektionen aus dem Ordner `Kurse/`.
 - **Interaktive Übungen**: In der Markdown-Datei werden Übungen mit `<Placeholder>ErwarteterWert</Placeholder>` definiert. Der Monaco Editor zeigt diese als `___` an.
+- **Gemini CLI Tutor**: Ein integrierter KI-Assistent, der die installierte `gemini` CLI nutzt. Er gibt kontextsensitive Tipps zum aktuellen Code und zum Lektionstext, ohne die Lösung direkt zu verraten.
+- **Anki-System (Spaced Repetition)**: Nach jeder erfolgreichen Übung kann ein Wiederholungs-Intervall (Nochmal, Schwer, Gut, Einfach) gewählt werden. Das Dashboard markiert fällige Aufgaben automatisch als "Wiederholung erforderlich".
 - **Verifizierung**: Die `VerificationController` API prüft die Benutzereingaben. Aktuell erfolgt dies durch einen einfachen String-Inhalt-Abgleich.
 - **IntelliSense**: Der `LspProxy` leitet LSP-Nachrichten vom Monaco Editor an die installierten nativen Sprachserver weiter.
 

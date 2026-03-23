@@ -23,6 +23,25 @@ Interaktive Lernplattform mit praxisbezogener Code-Analyse und Fokus auf moderne
   - `rust-analyzer` (Rust)
   - `typescript-language-server` (TS/JS/CSS/HTML)
 
+### KI-Unterstützung (Gemini CLI Tutor)
+- **Integration**: `ChatController.cs` nutzt die installierte **Gemini CLI** (`gemini -p "..."`), um kontextbezogene Antworten zu generieren.
+- **Kontext**: Der Tutor erhält den Titel, den Inhalt der Lektion und den aktuellen Code aus dem Editor als System-Prompt.
+- **Funktion**: Hilft Studenten bei Problemen, ohne die Lösung direkt zu verraten (Tutor-Modus).
+
+### Wiederholungssystem (Anki-Style SRS)
+- **Logik**: Spaced Repetition System (SRS) zur Festigung von Lerninhalten.
+- **Speicherung**: Nutzt Cookies (`lms_review_[id]`), um den nächsten Wiederholungszeitpunkt zu speichern.
+- **Intervalle**: 
+  - *Nochmal*: +1 Minute
+  - *Schwer*: +1 Tag
+  - *Gut*: +4 Tage
+  - *Einfach*: +7 Tage
+- **Visualisierung**: Das Dashboard markiert fällige Lektionen automatisch gelb und zeigt ein Wecker-Symbol.
+
+### Fortschritts-Verwaltung
+- **Einzel-Reset**: `Details.cshtml` bietet einen Button zum Zurücksetzen einer einzelnen Aufgabe (löscht Cookies und stellt Start-Code wieder her).
+- **Globaler Reset**: `Index.cshtml` ermöglicht das Löschen des gesamten Fortschritts (alle `lms_done_` und `lms_review_` Cookies).
+
 ## Kurs-Struktur & Schwierigkeitsstufen
 Die Lektionen sind in drei Schwierigkeitsstufen (Level) unterteilt:
 1. **Leicht (Green)**: Grundlagen wie Variablen und Kontrollstrukturen.
