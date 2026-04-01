@@ -58,6 +58,7 @@ Die Lektionen sind in drei Schwierigkeitsstufen (Level) unterteilt:
 - **CplusplusGrundlagen**: C++ Programmierung (Level 1-2).
 - **GolangGrundlagen**: Go Programmierung (Level 1-2).
 - **RustGrundlagen**: Rust Programmierung (Level 1-2).
+- **Compilerbau**: Grundlagen der Lexik und Parser (Level 2).
 - **PraxisProjekte**: Reale Anwendungsbeispiele in verschiedenen Sprachen (Level 1-3).
 
 ## Erstellung von Lerninhalten (Markdown)
